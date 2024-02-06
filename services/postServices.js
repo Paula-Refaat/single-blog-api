@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 const { uuid } = require("uuidv4");
 const sharp = require("sharp");
-
 const asyncHandler = require("express-async-handler");
+const factory = require("./handllerFactory");
 
-const ApiError = require("../utils/apiError");
+const ApiError = require("../utils/ApiError");
 
 const { uploadArrayOfImages } = require("../middlewares/uploadImageMiddleware");
 
@@ -42,49 +42,22 @@ exports.resizeImage = asyncHandler(async (req, res, next) => {
 // @desc    Create new post
 // @router  POST /api/v1/posts
 // @access  public/protected
-exports.createPost = asyncHandler(async (req, res, next) => {
-  const post = await Post.create(req.body);
-  res.status(201).json({ message: "Post created succssfully", post });
-});
+exports.createPost = factory.createOne(Post);
 
 // @desc    Get All posts
 // @router  Get /api/v1/posts
-// @access  private(admin only)/protected
-exports.getAllPosts = asyncHandler(async (req, res, next) => {
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 10;
-  const skip = (page - 1) * limit;
-
-  const posts = await Post.find({}).limit(limit).skip(skip);
-
-  res.status(200).json({ page: page, limit: limit, posts });
-});
+// @access  Public
+exports.getAllPosts = factory.getAll(Post, "Post");
 
 // @desc    Get Specific post
 // @router  Get /api/v1/posts/:id
 // @access  public
-exports.getOnePost = asyncHandler(async (req, res, next) => {
-  const post = await Post.findById(req.params.id);
-  if (!post) {
-    return next(new ApiError(`post not found for this id ${req.params.id}`));
-  }
-  res.status(200).json({ data: post });
-});
+exports.getOnePost = factory.getOne(Post, "comments");
 
 // @desc    Update Specific post
 // @router  PUT /api/v1/posts/:id
 // @access  private/protected
-exports.updatePost = asyncHandler(async (req, res, next) => {
-  const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
-  if (!post) {
-    return next(
-      new ApiError(`post not found for this id ${req.params.id}`, 404)
-    );
-  }
-  res.status(200).json({ data: post });
-});
+exports.updatePost = factory.updateOne(Post);
 
 // @desc    Delete Specific post
 // @router  DELETE /api/v1/posts/:id

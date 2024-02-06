@@ -16,6 +16,11 @@ const PostSchema = new mongoose.Schema(
       minlength: 10,
     },
 
+    date: {
+      type: Date,
+      default: Date.now(),
+    },
+
     // user: {
     //   type: mongoose.Schema.Types.ObjectId,
     //   ref: "User",
@@ -75,7 +80,7 @@ PostSchema.pre(/^find/, function (next) {
     path: "likes",
     select: "name",
   });
-  this.populate({ path: "comments", select: "text -postId" });
+  // this.populate({ path: "comments", select: "text -postId" });
   next();
 });
 module.exports = mongoose.model("Post", PostSchema);

@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 const sharp = require("sharp");
 const { uuid } = require("uuidv4");
 
-const ApiError = require("../utils/apiError");
+const factory = require("./handllerFactory");
 const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
 
 const Comment = require("../models/commentModel");
@@ -45,56 +45,24 @@ exports.resizeImage = asyncHandler(async (req, res, next) => {
 // @desc    Create new comment
 // @router  POST /api/v1/comments
 // @access  public/protected
-exports.createComment = asyncHandler(async (req, res, next) => {
-  const comment = await Comment.create(req.body);
-  res.status(201).json({ message: "comment created succssfully", comment });
-});
+exports.createComment = factory.createOne(Comment);
 
 // @desc    Get All comments
 // @router  POST /api/v1/comments
 // @access  public/protected
-exports.getAllComment = asyncHandler(async (req, res, next) => {
-  const comment = await Comment.find(req.filterObj);
-  res.status(200).json({ data: comment });
-});
+exports.getAllComment = factory.getAll(Comment);
 
 // @desc    Get Specific comment
 // @router  POST /api/v1/comments/:id
 // @access  public/protected
-exports.getOneComment = asyncHandler(async (req, res, next) => {
-  const comment = await Comment.findById(req.params.id);
-  if (!comment) {
-    return next(
-      new ApiError(`comment not found for this id ${req.params.id}`, 404)
-    );
-  }
-  res.status(200).json({ data: comment });
-});
+exports.getOneComment = factory.getOne(Comment);
 
 // @desc    Update Specific comment
 // @router  PUT /api/v1/comments/:id
 // @access  private/protected
-exports.updateComment = asyncHandler(async (req, res, next) => {
-  const comment = await Comment.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
-  if (!comment) {
-    return next(
-      new ApiError(`comment not found for this id ${req.params.id}`, 404)
-    );
-  }
-  res.status(200).json({ data: comment });
-});
+exports.updateComment = factory.updateOne(Comment);
 
 // @desc    Delete Specific comment
 // @router  DELETE /api/v1/comments/:id
 // @access  private/protected (admin and logged user(make comment, post owner) for his comment)
-exports.deleteComment = asyncHandler(async (req, res, next) => {
-  const comment = await Comment.findByIdAndDelete(req.params.id);
-  if (!comment) {
-    return next(
-      new ApiError(`comment not found for this id ${req.params.id}`, 404)
-    );
-  }
-  res.status(204).json({ data: "comment deleted success" });
-});
+exports.deleteComment = factory.deleteOne(Comment);

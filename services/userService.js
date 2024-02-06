@@ -1,7 +1,7 @@
 const fs = require("fs");
 const asyncHandler = require("express-async-handler");
 const { hashSync } = require("bcryptjs");
-const ApiError = require("../utils/apiError");
+const ApiError = require("../utils/ApiError");
 const createToken = require("../utils/createToken");
 const UserAuthorization = require("../utils/UserAuthorization");
 const {

@@ -8,7 +8,7 @@ dotenv.config({ path: "config.env" });
 const dbConnection = require("./config/database");
 
 const globalError = require("./middlewares/errorMiddleware");
-const ApiError = require("./utils/apiError");
+const ApiError = require("./utils/ApiError");
 
 const authRoute = require("./routes/authRoute");
 const userRoute = require("./routes/userRoute");

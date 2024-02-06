@@ -9,7 +9,6 @@ const {
   updatePost,
   deletePost,
   likePost,
-  getAllLoggedUserPosts,
   uploadPostImage,
   resizeImage,
 } = require("../services/postServices");
@@ -34,7 +33,7 @@ router.post(
   createPost
 );
 
-router.get("/", authService.protect, getAllPosts);
+router.get("/", getAllPosts);
 // router.get("/myPosts", authService.protect, getAllLoggedUserPosts);
 
 router.get(
