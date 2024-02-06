@@ -11,11 +11,6 @@ const { uploadArrayOfImages } = require("../middlewares/uploadImageMiddleware");
 const Post = require("../models/postModel");
 const Comment = require("../models/commentModel");
 
-exports.setUserIdToBody = (req, res, next) => {
-  if (!req.body.user) req.body.user = req.user._id;
-  next();
-};
-
 // Upload single image
 exports.uploadPostImage = uploadArrayOfImages(["images"]);
 

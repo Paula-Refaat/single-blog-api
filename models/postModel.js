@@ -21,12 +21,6 @@ const PostSchema = new mongoose.Schema(
       default: Date.now(),
     },
 
-    // user: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "User",
-    //   required: true,
-    // },
-
     images: [String],
 
     // category: {

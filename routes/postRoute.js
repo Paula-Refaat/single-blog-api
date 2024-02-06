@@ -3,7 +3,6 @@ const router = require("express").Router();
 const authService = require("../services/authService");
 const {
   createPost,
-  setUserIdToBody,
   getAllPosts,
   getOnePost,
   updatePost,
@@ -28,13 +27,11 @@ router.post(
   authService.protect,
   uploadPostImage,
   resizeImage,
-  setUserIdToBody,
   createPostValidator,
   createPost
 );
 
 router.get("/", getAllPosts);
-// router.get("/myPosts", authService.protect, getAllLoggedUserPosts);
 
 router.get(
   "/:id",
