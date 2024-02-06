@@ -1,5 +1,5 @@
+const fs = require("fs");
 const asyncHandler = require("express-async-handler");
-const sharp = require("sharp");
 const { uuid } = require("uuidv4");
 
 const factory = require("./handllerFactory");
@@ -30,14 +30,17 @@ exports.uploadCommentImage = uploadSingleImage("image");
 // Image Procesing
 exports.resizeImage = asyncHandler(async (req, res, next) => {
   if (req.file) {
-    const filename = `comment-${uuid()}-${Date.now()}.jpeg`;
-    await sharp(req.file.buffer)
-      .toFormat("jpeg")
-      .jpeg({ quality: 98 })
-      .toFile(`uploads/comments/${filename}`);
+    const directoryPath = "uploads/comments";
+    if (!fs.existsSync(directoryPath)) {
+      fs.mkdirSync(directoryPath, { recursive: true });
+    }
+    const imageName = `comment-${uuid()}-${Date.now()}.jpeg`;
+    const imagePath = `uploads/comments/${imageName}`;
+
+    fs.writeFileSync(imagePath, req.file.buffer);
 
     //Save image into our db
-    req.body.image = filename;
+    req.body.image = imageName;
   }
   next();
 });

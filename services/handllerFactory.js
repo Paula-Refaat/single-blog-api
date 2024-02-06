@@ -71,5 +71,6 @@ exports.deleteOne = (Model) =>
     }
     // Trigger "remove" event when delete document
     // document.remove();
+
     res.status(204).send();
   });

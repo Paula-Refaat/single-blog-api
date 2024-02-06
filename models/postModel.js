@@ -77,4 +77,5 @@ PostSchema.pre(/^find/, function (next) {
   // this.populate({ path: "comments", select: "text -postId" });
   next();
 });
+
 module.exports = mongoose.model("Post", PostSchema);

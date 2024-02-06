@@ -1,11 +1,10 @@
+const fs = require("fs");
 const mongoose = require("mongoose");
 const { uuid } = require("uuidv4");
-const sharp = require("sharp");
 const asyncHandler = require("express-async-handler");
+
 const factory = require("./handllerFactory");
-
 const ApiError = require("../utils/ApiError");
-
 const { uploadArrayOfImages } = require("../middlewares/uploadImageMiddleware");
 
 const Post = require("../models/postModel");
@@ -17,17 +16,22 @@ exports.uploadPostImage = uploadArrayOfImages(["images"]);
 // Image Procesing
 exports.resizeImage = asyncHandler(async (req, res, next) => {
   if (req.files) {
+    const directoryPath = "uploads/posts";
+
+    if (!fs.existsSync(directoryPath)) {
+      fs.mkdirSync(directoryPath, { recursive: true });
+    }
     req.body.images = [];
     await Promise.all(
       req.files.map(async (img, index) => {
         const imageName = `post-${uuid()}-${Date.now()}-${index + 1}.jpeg`;
-        await sharp(img.buffer)
-          .toFormat("jpeg")
-          .jpeg({ quality: 98 })
-          .toFile(`uploads/posts/${imageName}`);
+        const imagePath = `uploads/posts/${imageName}`;
 
-        // Save image into our db
+        // Save image into our db (or any other logic you need)
         req.body.images.push(imageName);
+
+        // Copy the buffer to the desired location (e.g., uploads/posts)
+        fs.writeFileSync(imagePath, img.buffer);
       })
     );
   }
