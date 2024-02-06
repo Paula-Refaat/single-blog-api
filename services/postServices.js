@@ -1,41 +1,41 @@
-const fs = require("fs");
 const mongoose = require("mongoose");
+const { uuid } = require("uuidv4");
+const sharp = require("sharp");
+
 const asyncHandler = require("express-async-handler");
-const ApiError = require("../utils/ApiError");
-const { uploadSingleImage } = require("../middleware/photoUpload");
-const {
-  cloudinaryRemoveImage,
-  cloudinaryUploadImage,
-} = require("../utils/cloudinary");
+
+const ApiError = require("../utils/apiError");
+
+const { uploadArrayOfImages } = require("../middlewares/uploadImageMiddleware");
+
 const Post = require("../models/postModel");
 const Comment = require("../models/commentModel");
-
-exports.uploadPostImageToServer = uploadSingleImage("image");
 
 exports.setUserIdToBody = (req, res, next) => {
   if (!req.body.user) req.body.user = req.user._id;
   next();
 };
-// @desc    Upload post image to cloudinary
-exports.uploadPostImageTocloudinary = async (req, res, next) => {
-  if (req.file) {
-    const result = await cloudinaryUploadImage(req.file.path);
-    req.body.image = {
-      url: result.url,
-      publicId: result.public_id,
-    };
-    fs.unlinkSync(req.file.path);
-  }
-  next();
-};
 
-// @desc    delete post image from cloudinary
-exports.deletePostImagefromcloudinary = asyncHandler(async (req, res, next) => {
-  const post = await Post.findById(req.params.id);
-  if (!post) {
-    return next(new ApiError(`post not found for this id ${req.params.id}`));
+// Upload single image
+exports.uploadPostImage = uploadArrayOfImages(["images"]);
+
+// Image Procesing
+exports.resizeImage = asyncHandler(async (req, res, next) => {
+  if (req.files) {
+    req.body.images = [];
+    await Promise.all(
+      req.files.map(async (img, index) => {
+        const imageName = `post-${uuid()}-${Date.now()}-${index + 1}.jpeg`;
+        await sharp(img.buffer)
+          .toFormat("jpeg")
+          .jpeg({ quality: 98 })
+          .toFile(`uploads/posts/${imageName}`);
+
+        // Save image into our db
+        req.body.images.push(imageName);
+      })
+    );
   }
-  await cloudinaryRemoveImage(post.image.publicId);
   next();
 });
 
@@ -60,21 +60,6 @@ exports.getAllPosts = asyncHandler(async (req, res, next) => {
   res.status(200).json({ page: page, limit: limit, posts });
 });
 
-// @desc    Get All posts For Logged User
-// @router  Get /api/v1/posts/myPosts
-// @access  public(User)/protected
-exports.getAllLoggedUserPosts = asyncHandler(async (req, res, next) => {
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 10;
-  const skip = (page - 1) * limit;
-
-  const posts = await Post.findOne({ user: req.user._id })
-    .limit(limit)
-    .skip(skip);
-
-  res.status(200).json({ page: page, limit: limit, posts });
-});
-
 // @desc    Get Specific post
 // @router  Get /api/v1/posts/:id
 // @access  public
@@ -94,7 +79,9 @@ exports.updatePost = asyncHandler(async (req, res, next) => {
     new: true,
   });
   if (!post) {
-    return next(new ApiError(`post not found for this id ${req.params.id}`));
+    return next(
+      new ApiError(`post not found for this id ${req.params.id}`, 404)
+    );
   }
   res.status(200).json({ data: post });
 });
@@ -123,7 +110,7 @@ exports.deletePost = asyncHandler(async (req, res, next) => {
   }
 });
 
-// @desc    Make Like On Specific Sost
+// @desc    Make Like/disLike On Specific Post
 // @router  PUT /api/v1/posts/like/:id
 // @access  public
 exports.likePost = asyncHandler(async (req, res, next) => {

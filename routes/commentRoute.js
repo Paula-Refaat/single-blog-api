@@ -7,6 +7,8 @@ const {
   getAllComment,
   createFilterobj,
   setPostIdToBody,
+  uploadCommentImage,
+  resizeImage,
 } = require("../services/commentServices");
 const {
   createCommentValidator,
@@ -22,6 +24,8 @@ const router = require("express").Router({ mergeParams: true });
 router.post(
   "/",
   authService.protect,
+  uploadCommentImage,
+  resizeImage,
   setUserIdToBody,
   setPostIdToBody,
   createCommentValidator,
@@ -32,6 +36,8 @@ router.get("/:id", authService.protect, getOneCommentValidator, getOneComment);
 router.put(
   "/:id",
   authService.protect,
+  uploadCommentImage,
+  resizeImage,
   setUserIdToBody,
   updateCommentValidator,
   updateComment

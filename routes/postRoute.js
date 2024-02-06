@@ -3,16 +3,15 @@ const router = require("express").Router();
 const authService = require("../services/authService");
 const {
   createPost,
-  uploadPostImageToServer,
   setUserIdToBody,
-  uploadPostImageTocloudinary,
   getAllPosts,
   getOnePost,
-  deletePostImagefromcloudinary,
   updatePost,
   deletePost,
   likePost,
   getAllLoggedUserPosts,
+  uploadPostImage,
+  resizeImage,
 } = require("../services/postServices");
 const {
   createPostValidator,
@@ -28,15 +27,15 @@ router.use("/:postId/comments", commentRoute);
 router.post(
   "/",
   authService.protect,
-  uploadPostImageToServer,
-  uploadPostImageTocloudinary,
+  uploadPostImage,
+  resizeImage,
   setUserIdToBody,
   createPostValidator,
   createPost
 );
 
 router.get("/", authService.protect, getAllPosts);
-router.get("/myPosts", authService.protect, getAllLoggedUserPosts);
+// router.get("/myPosts", authService.protect, getAllLoggedUserPosts);
 
 router.get(
   "/:id",
@@ -49,11 +48,9 @@ router.get(
 router.put(
   "/:id",
   authService.protect,
-  authService.allowTo("user"),
+  uploadPostImage,
+  resizeImage,
   updatePostValidator,
-  deletePostImagefromcloudinary,
-  uploadPostImageToServer,
-  uploadPostImageTocloudinary,
   updatePost
 );
 
@@ -62,7 +59,6 @@ router.delete(
   authService.protect,
   authService.allowTo("user", "admin"),
   deletePostValidator,
-  deletePostImagefromcloudinary,
   deletePost
 );
 

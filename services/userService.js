@@ -1,7 +1,7 @@
 const fs = require("fs");
 const asyncHandler = require("express-async-handler");
 const { hashSync } = require("bcryptjs");
-const ApiError = require("../utils/ApiError");
+const ApiError = require("../utils/apiError");
 const createToken = require("../utils/createToken");
 const UserAuthorization = require("../utils/UserAuthorization");
 const {
@@ -10,7 +10,7 @@ const {
 } = require("../utils/cloudinary");
 const User = require("../models/userModel");
 
-const { uploadSingleImage } = require("../middleware/photoUpload");
+const { uploadSingleImage } = require("../middlewares/photoUpload");
 
 // Upload single image
 exports.uploadUserImage = uploadSingleImage("image");

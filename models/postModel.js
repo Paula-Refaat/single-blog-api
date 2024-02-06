@@ -15,23 +15,21 @@ const PostSchema = new mongoose.Schema(
       trim: true,
       minlength: 10,
     },
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    image: {
-      type: Object,
-      default: {
-        url: "",
-        publicId: null,
-      },
-    },
-    category: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+
+    // user: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "User",
+    //   required: true,
+    // },
+
+    images: [String],
+
+    // category: {
+    //   type: String,
+    //   required: true,
+    //   trim: true,
+    // },
+
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -53,13 +51,31 @@ PostSchema.virtual("comments", {
   localField: "_id",
 });
 
+const setImageURL = (doc) => {
+  if (doc.images) {
+    const imagesList = [];
+    doc.images.forEach((image) => {
+      const URL = `${process.env.BASE_URL}/posts/${image}`;
+      imagesList.push(URL);
+    });
+    doc.images = imagesList;
+  }
+};
+
+PostSchema.post("init", (doc) => {
+  setImageURL(doc);
+});
+PostSchema.post("save", (doc) => {
+  setImageURL(doc);
+});
+
 PostSchema.pre(/^find/, function (next) {
-  this.populate({ path: "user", select: "name" })
-    .populate({
-      path: "likes",
-      select: "name",
-    })
-    .populate({ path: "comments", select: "text -postId" });
+  // this.populate({ path: "user", select: "name" })
+  this.populate({
+    path: "likes",
+    select: "name",
+  });
+  this.populate({ path: "comments", select: "text -postId" });
   next();
 });
 module.exports = mongoose.model("Post", PostSchema);

@@ -1,5 +1,5 @@
 const { check } = require("express-validator");
-const validatorMiddleware = require("../../middleware/validatorMiddleware");
+const validatorMiddleware = require("../../middlewares/validatorMiddleware");
 const Post = require("../../models/postModel");
 const Comment = require("../../models/commentModel");
 
@@ -45,7 +45,7 @@ exports.updateCommentValidator = [
             new Error(`There is no comment for this id ${val}`)
           );
         }
-        if (comment.user.toString() != req.user._id.toString()) {
+        if (comment.user._id.toString() != req.user._id.toString()) {
           return Promise.reject(
             new Error("You are not allowed to perform this action")
           );
@@ -82,28 +82,28 @@ exports.deleteCommentValidator = [
         }
 
         // Check if the user owns the comment
-        if (comment.user.toString() === req.user._id.toString()) {
+        if (comment.user._id.toString() === req.user._id.toString()) {
           return true; // User can delete their own comment
         }
 
-        // Find the post associated with the comment
-        return Post.findById(comment.postId).then((post) => {
-          if (!post) {
-            return Promise.reject(
-              new Error(`There is no post for this id ${comment.postId}`)
-            );
-          }
+        // // Find the post associated with the comment
+        // return Post.findById(comment.postId).then((post) => {
+        //   if (!post) {
+        //     return Promise.reject(
+        //       new Error(`There is no post for this id ${comment.postId}`)
+        //     );
+        //   }
 
-          // Check if the user is the owner of the post
-          if (post.user.toString() === req.user._id.toString()) {
-            return true; // Post owner can delete any comment on their post
-          }
+        //   // Check if the user is the owner of the post
+        //   if (post.user.toString() === req.user._id.toString()) {
+        //     return true; // Post owner can delete any comment on their post
+        //   }
 
-          // Guest users cannot delete comments
-          return Promise.reject(
-            new Error("You are not allowed to perform this action")
-          );
-        });
+        //   // Guest users cannot delete comments
+        //   return Promise.reject(
+        //     new Error("You are not allowed to perform this action")
+        //   );
+        // });
       });
     }),
 

@@ -1,12 +1,14 @@
+const path = require("path");
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 const dotenv = require("dotenv");
 dotenv.config({ path: "config.env" });
 
 const dbConnection = require("./config/database");
 
-const globalError = require("./middleware/errorMiddleware");
-const ApiError = require("./utils/ApiError");
+const globalError = require("./middlewares/errorMiddleware");
+const ApiError = require("./utils/apiError");
 
 const authRoute = require("./routes/authRoute");
 const userRoute = require("./routes/userRoute");
@@ -19,6 +21,10 @@ dbConnection();
 // init app
 const app = express();
 
+//Enable other domains to access your application
+app.use(cors());
+app.options("*", cors()); // include before other routes
+
 // test Route
 app.get("/", (req, res, next) => {
   res.send("App Running...");
@@ -30,6 +36,7 @@ if (process.env.NODE_ENV === "development") {
   console.log(`mode: ${process.env.NODE_ENV}`);
 }
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "uploads")));
 
 // Mount Routers
 app.use("/api/v1/auth", authRoute);

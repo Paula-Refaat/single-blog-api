@@ -1,5 +1,10 @@
 const asyncHandler = require("express-async-handler");
-const ApiError = require("../utils/ApiError");
+const sharp = require("sharp");
+const { uuid } = require("uuidv4");
+
+const ApiError = require("../utils/apiError");
+const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
+
 const Comment = require("../models/commentModel");
 
 exports.setPostIdToBody = (req, res, next) => {
@@ -19,6 +24,24 @@ exports.createFilterobj = (req, res, next) => {
   next();
 };
 
+// Upload single image
+exports.uploadCommentImage = uploadSingleImage("image");
+
+// Image Procesing
+exports.resizeImage = asyncHandler(async (req, res, next) => {
+  if (req.file) {
+    const filename = `comment-${uuid()}-${Date.now()}.jpeg`;
+    await sharp(req.file.buffer)
+      .toFormat("jpeg")
+      .jpeg({ quality: 98 })
+      .toFile(`uploads/comments/${filename}`);
+
+    //Save image into our db
+    req.body.image = filename;
+  }
+  next();
+});
+
 // @desc    Create new comment
 // @router  POST /api/v1/comments
 // @access  public/protected
@@ -31,7 +54,7 @@ exports.createComment = asyncHandler(async (req, res, next) => {
 // @router  POST /api/v1/comments
 // @access  public/protected
 exports.getAllComment = asyncHandler(async (req, res, next) => {
-  const comment = await Comment.find(req.filterObj)
+  const comment = await Comment.find(req.filterObj);
   res.status(200).json({ data: comment });
 });
 
@@ -41,7 +64,9 @@ exports.getAllComment = asyncHandler(async (req, res, next) => {
 exports.getOneComment = asyncHandler(async (req, res, next) => {
   const comment = await Comment.findById(req.params.id);
   if (!comment) {
-    return next(new ApiError(`comment not found for this id ${req.params.id}`));
+    return next(
+      new ApiError(`comment not found for this id ${req.params.id}`, 404)
+    );
   }
   res.status(200).json({ data: comment });
 });
@@ -54,7 +79,9 @@ exports.updateComment = asyncHandler(async (req, res, next) => {
     new: true,
   });
   if (!comment) {
-    return next(new ApiError(`comment not found for this id ${req.params.id}`));
+    return next(
+      new ApiError(`comment not found for this id ${req.params.id}`, 404)
+    );
   }
   res.status(200).json({ data: comment });
 });
@@ -65,7 +92,9 @@ exports.updateComment = asyncHandler(async (req, res, next) => {
 exports.deleteComment = asyncHandler(async (req, res, next) => {
   const comment = await Comment.findByIdAndDelete(req.params.id);
   if (!comment) {
-    return next(new ApiError(`comment not found for this id ${req.params.id}`));
+    return next(
+      new ApiError(`comment not found for this id ${req.params.id}`, 404)
+    );
   }
   res.status(204).json({ data: "comment deleted success" });
 });
